@@ -424,11 +424,17 @@ static int parse_value(struct parse_arg_ctx *ctx, char *value, __sz value_len)
 	/* Check if resulting number fits */
 #define do_check_num(num, is_negative, min, max)			\
 	do {								\
-		if (num > (unsigned long long) max)			\
-			goto outofrange;				\
 		if (is_negative) {					\
-			num = -num;					\
-			if ((long long) num < (long long) min)		\
+			if (num > 0) {					\
+				if ((min) >= 0)				\
+					goto outofrange;		\
+				if (num > ((unsigned long long)(-(min + 1)) + \
+					   1ULL))			\
+					goto outofrange;		\
+				num = -num;				\
+			}						\
+		} else {						\
+			if (num > (unsigned long long)(max))		\
 				goto outofrange;			\
 		}							\
 	} while (0)
